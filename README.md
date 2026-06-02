@@ -178,14 +178,6 @@ This project demonstrates:
 - dashboard-ready data export
 - clear separation between ingestion, transformation, and analytics layers
 
-## Future Enhancements
-
-- add data quality checks for schema drift and missing values
-- parameterize source paths, table names, and date ranges
-- add automated workflow orchestration in Databricks Jobs
-- expand the grocery basket with more product categories
-- publish a Tableau dashboard connected to the Gold extract
-
 ## Summary
 
 The Grocery Intelligence Index shows how a compact data pipeline can still follow production-style engineering practices. It transforms grocery price data from raw CSV input into a polished, analytics-ready dataset for tracking price movement across a focused basket of everyday grocery items.
