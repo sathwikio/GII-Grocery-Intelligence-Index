@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import Column, DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
@@ -26,7 +26,7 @@ REQUIRED_SILVER_COLUMNS = {
 }
 
 
-def _basket_category() -> F.Column:
+def _basket_category() -> Column:
     product = F.lower(F.col("ProductName"))
     expression = None
     for category in BASKET_CATEGORIES:
@@ -87,4 +87,3 @@ def run_gold(spark, source_table: str, target_table: str, export_path: str) -> N
     gold_df.coalesce(1).write.format("csv").option("header", "true").mode("overwrite").save(
         export_path
     )
-
