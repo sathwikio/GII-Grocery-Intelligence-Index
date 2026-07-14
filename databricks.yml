@@ -1,0 +1,19 @@
+bundle:
+  name: grocery-intelligence-index
+
+include:
+  - resources/*.yml
+
+artifacts:
+  default:
+    type: whl
+    build: python -m build --wheel
+    path: .
+
+targets:
+  dev:
+    mode: development
+    default: true
+  prod:
+    mode: production
+

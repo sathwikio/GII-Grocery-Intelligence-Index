@@ -3,181 +3,120 @@
 ![Databricks](https://img.shields.io/badge/Platform-Databricks-EF3E2E?style=for-the-badge&logo=databricks&logoColor=white)
 ![PySpark](https://img.shields.io/badge/Engine-PySpark-FDEE21?style=for-the-badge&logo=apache-spark&logoColor=black)
 ![Delta Lake](https://img.shields.io/badge/Storage-Delta%20Lake-00A3E0?style=for-the-badge)
-![Tableau](https://img.shields.io/badge/Output-Tableau%20Ready-E97627?style=for-the-badge&logo=tableau&logoColor=white)
+![CI](https://img.shields.io/github/actions/workflow/status/sathwikio/GII-Grocery-Intelligence-Index/ci.yml?branch=main&label=CI)
 
-The **Grocery Intelligence Index** is a Databricks data engineering project that transforms raw grocery price data into a curated analytics layer for tracking grocery price movement over time.
+The Grocery Intelligence Index is a Databricks data pipeline that transforms monthly Canadian
+grocery-price records into a tested, analytics-ready Delta dataset. It preserves the source
+product and unit grain while adding basket categories and valid month-over-month comparisons.
 
-It uses a Bronze-Silver-Gold medallion architecture to move data from raw ingestion to cleaned, analysis-ready Delta tables and a Tableau-ready CSV extract.
+## What it answers
 
-## Project Snapshot
+- How did a source grocery product's average price change from the immediately preceding month?
+- How do price records differ between Canada and Ontario?
+- Which source products belong to ten practical grocery basket categories?
 
-| Area | Details |
-| --- | --- |
-| Domain | Grocery price analytics |
-| Time window | 2023-2026 analysis period |
-| Platform | Databricks |
-| Processing | Spark / PySpark |
-| Storage | Delta tables with Unity Catalog |
-| Output | Gold analytics table and Tableau-ready CSV |
-| Architecture | Bronze, Silver, Gold medallion pipeline |
-
-## Why This Project Matters
-
-Grocery prices change quickly, and raw public datasets are rarely ready for analysis right away. This project turns source-level price records into a clean grocery basket dataset that can support:
-
-- month-over-month price trend analysis
-- product-level grocery basket comparisons
-- Canada and Ontario grocery price reporting
-- dashboard-ready extracts for Tableau Public
-- reproducible data engineering workflows in Databricks
+The project uses Statistics Canada table
+[18-10-0245-01](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810024501). The repository does
+not redistribute the source dataset.
 
 ## Architecture
 
-```text
-Raw CSV
-   |
-   v
-Bronze Layer
-Raw ingestion + lineage metadata
-   |
-   v
-Silver Layer
-Cleaning + typing + geographic filtering
-   |
-   v
-Gold Layer
-Core basket analytics + MoM price movement
-   |
-   v
-Tableau Extract
-Dashboard-ready CSV output
+```mermaid
+flowchart TD
+    A["StatCan CSV"] --> B["Bronze Delta<br/>raw fields + lineage"]
+    B --> C["Silver Delta<br/>typed and validated"]
+    C --> D["Gold Delta<br/>basket + monthly change"]
+    D --> E["CSV extract<br/>BI-ready output"]
 ```
 
-## Medallion Pipeline
+| Layer | Responsibility | Primary controls |
+| --- | --- | --- |
+| Bronze | Land the CSV without inferred types | Empty-input failure, ingestion metadata |
+| Silver | Type, trim, and filter records | Required schema, positive prices, unique business keys |
+| Gold | Categorize products and calculate price movement | Unit-aware grain, consecutive-month validation |
 
-### Bronze: Raw Ingestion
+## Correctness decisions
 
-The Bronze notebook ingests the source CSV into Databricks and preserves the raw structure of the data.
+- The ten labels are **categories**, not ten individual rows. Original product descriptions and
+  units are retained to prevent unlike package sizes from being silently combined.
+- `PreviousMonthPrice` is populated only when the immediately preceding calendar month exists.
+- A missing previous month remains null; it is not reported as a false 0% change.
+- The default geographic scope is Canada and Ontario. The project makes no Toronto-level claim.
 
-Key steps:
+See the complete [Gold data contract](docs/data-contract.md).
 
-- reads the source CSV from a Databricks volume
-- loads fields as strings for a stable landing layer
-- adds ingestion metadata such as timestamp and source file name
-- writes the result to `workspace.bronze.grocery_prices`
-
-### Silver: Cleaned Data
-
-The Silver notebook standardizes the raw records into a cleaner analytical shape.
-
-Key steps:
-
-- reads from the Bronze Delta table
-- filters records to Canada and Ontario
-- parses `REF_DATE` into `SnapshotDate`
-- trims product names into `ProductName`
-- casts price values into `AveragePrice`
-- removes records with missing dates or price values
-- writes the result to `workspace.silver.grocery_prices`
-
-### Gold: Analytics Layer
-
-The Gold notebook creates the final grocery basket dataset for reporting and visualization.
-
-The basket currently focuses on:
-
-```text
-Milk, Eggs, Bread, Butter, Chicken, Bananas, Potatoes, Beef, Coffee, Bacon
-```
-
-Key steps:
-
-- reads from the Silver Delta table
-- filters to the core grocery basket
-- calculates previous-month price with a Spark window function
-- calculates month-over-month percentage change
-- writes the result to `workspace.gold.grocery_prices`
-- exports a Tableau-ready CSV extract
-
-## Repository Structure
+## Repository structure
 
 ```text
 .
-|-- Bronze/
-|   `-- 01_bronze_grocery_prices.ipynb
-|-- Silver/
-|   `-- 02_silver_grocery_prices.ipynb
-|-- Gold/
-|   `-- 03_gold_grocery_prices.ipynb
-|-- LICENSE
-`-- README.md
+├── Bronze/ Silver/ Gold/    # Thin Databricks notebook entrypoints
+├── src/grocery_index/       # Testable Bronze, Silver, Gold, and quality logic
+├── jobs/                    # Databricks Python task entrypoints
+├── tests/                   # Local Spark unit and data-quality tests
+├── resources/               # Databricks Workflow definition
+├── docs/                    # Data contracts and engineering decisions
+├── databricks.yml           # Databricks Asset Bundle targets
+└── pyproject.toml           # Package and development dependencies
 ```
 
-## Data Model
+## Gold data model
 
-The final Gold layer includes the main fields needed for grocery price trend analysis:
-
-| Column | Description |
+| Column | Meaning |
 | --- | --- |
-| `SnapshotDate` | Monthly date associated with the grocery price record |
-| `Geography` | Geographic scope, such as Canada or Ontario |
-| `ProductName` | Grocery item or product category |
-| `AveragePrice` | Current average price |
-| `PreviousMonthPrice` | Previous month's average price for the same product and geography |
-| `MoM_PercentageChange` | Month-over-month percentage price change |
+| `SnapshotDate` | First day of the source reference month |
+| `Geography` | Canada or Ontario by default |
+| `BasketCategory` | One of ten configured grocery categories |
+| `ProductName` | Original trimmed source product description |
+| `UOM` | Source unit of measure |
+| `AveragePrice` | Current source price |
+| `PreviousMonthPrice` | Previous calendar month's price when available |
+| `MoM_PercentageChange` | Percentage change from the valid previous month |
 
-## Source and Output Paths
+## Local validation
 
-Expected source CSV:
+Python 3.10+ and Java are required for local PySpark tests.
 
-```text
-/Volumes/workspace/bronze/v_gii_raw_landing/18100245.csv
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+ruff check src tests jobs
+pytest
 ```
 
-Final Gold table:
+GitHub Actions runs linting and tests for pull requests and changes to `main`.
 
-```text
-workspace.gold.grocery_prices
+## Databricks deployment
+
+The default configuration preserves the existing catalog, schema, and volume paths. Review
+`src/grocery_index/config.py` before deploying to another workspace.
+
+```bash
+databricks bundle validate -t dev
+databricks bundle deploy -t dev
+databricks bundle run grocery_intelligence_pipeline -t dev
 ```
 
-Tableau-ready export:
+The Workflow runs Bronze, Silver, and Gold sequentially with two task retries. A production target
+is defined, but workspace authentication, cluster policy, permissions, schedules, notifications,
+and production paths must be supplied by the deploying organization rather than embedded in this
+public repository.
 
-```text
-/Volumes/workspace/gold/gold_output/toronto_grocery_index_extract
-```
+## Current scope and limitations
 
-## How to Run
+- Batch ingestion of one source CSV; incremental ingestion is not claimed.
+- Full-table overwrite is retained from the original small portfolio workflow.
+- Category matching uses the ten existing basket keywords and retains source-level grain.
+- The CSV export uses one partition for convenient BI consumption and is intended for this compact
+  dataset, not large-scale serving.
+- No dashboard or performance benchmark is claimed until an artifact is published and reproducible.
 
-Run the notebooks in order:
+## Tech stack
 
-1. `Bronze/01_bronze_grocery_prices.ipynb`
-2. `Silver/02_silver_grocery_prices.ipynb`
-3. `Gold/03_gold_grocery_prices.ipynb`
+Databricks, PySpark, Delta Lake, Unity Catalog, Databricks Asset Bundles, pytest, Ruff, and GitHub
+Actions.
 
-Each notebook depends on the Delta table created by the previous layer.
+## License
 
-## Tech Stack
+MIT
 
-- Databricks
-- PySpark
-- Spark SQL functions
-- Delta Lake
-- Unity Catalog
-- Databricks Volumes
-- Tableau Public export workflow
-
-## Portfolio Highlights
-
-This project demonstrates:
-
-- medallion architecture design
-- raw-to-curated data pipeline development
-- Delta table creation in Databricks
-- data cleaning and type standardization with PySpark
-- analytical window functions for time-series price movement
-- dashboard-ready data export
-- clear separation between ingestion, transformation, and analytics layers
-
-## Summary
-
-The Grocery Intelligence Index shows how a compact data pipeline can still follow production-style engineering practices. It transforms grocery price data from raw CSV input into a polished, analytics-ready dataset for tracking price movement across a focused basket of everyday grocery items.
