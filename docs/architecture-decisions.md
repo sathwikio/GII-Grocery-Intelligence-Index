@@ -62,7 +62,7 @@ Data pipelines often suffer from "notebook sprawl," where mission-critical busin
 
 ### Decision
 - All transformation logic, schema definitions, and quality rules are packaged as a modular, pure-Python package in `src/grocery_index/`.
-- Databricks notebooks (`Bronze/`, `Silver/`, `Gold/`) and workflow tasks (`jobs/`) act purely as **thin orchestration wrappers** invoking the tested package.
+- Databricks notebooks (`notebooks/`) and workflow tasks (`jobs/`) act purely as **thin orchestration wrappers** invoking the tested package.
 - Infrastructure and multi-environment deployment (`dev`, `prod`) are managed as code via **Databricks Asset Bundles (`databricks.yml`)**.
 
 ---

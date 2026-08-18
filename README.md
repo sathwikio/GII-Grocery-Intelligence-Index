@@ -201,7 +201,7 @@ databricks bundle run grocery_intelligence_pipeline -t dev
 │   ├── logging.py           # Structured pipeline logging & execution metrics
 │   └── cli.py               # Local & CLI pipeline execution runner
 ├── jobs/                    # Databricks Python workflow entrypoints
-├── Bronze/ Silver/ Gold/    # Databricks interactive notebook entrypoints
+├── notebooks/               # Interactive exploration & Databricks notebooks
 ├── data/
 │   ├── raw/                 # Official StatCan 18-10-0245-01 dataset (2017–2026)
 │   ├── export/              # Curated Gold analytical extract for serving
