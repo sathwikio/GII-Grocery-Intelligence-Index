@@ -217,7 +217,7 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Local pipeline data outputs
+# Local pipeline delta table cache
 data/delta/
-data/export/
+
 
