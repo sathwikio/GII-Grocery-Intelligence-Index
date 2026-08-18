@@ -2,30 +2,57 @@ import os
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 # Page configuration
 st.set_page_config(
-    page_title="Grocery Intelligence Index (2017–2026)",
+    page_title="Canadian Grocery Price Intelligence (2017–2026)",
     page_icon="🛒",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Custom Styling
+# Custom Styling for a clean, friendly interface
 st.markdown(
     """
     <style>
-    .main-header {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #1E293B;
+    .main-title {
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: #0F172A;
         margin-bottom: 0.2rem;
     }
-    .sub-header {
+    .sub-title {
         font-size: 1.05rem;
-        color: #64748B;
+        color: #475569;
         margin-bottom: 1.5rem;
+    }
+    .receipt-box {
+        background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+        border: 2px solid #CBD5E1;
+        border-radius: 12px;
+        padding: 1.25rem;
+        text-align: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .receipt-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .receipt-price {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #0F172A;
+        margin: 0.3rem 0;
+    }
+    .receipt-change {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #DC2626;
     }
     </style>
     """,
@@ -45,228 +72,294 @@ def load_data():
     df["AveragePrice"] = pd.to_numeric(df["AveragePrice"], errors="coerce")
     if "MoM_PercentageChange" in df.columns:
         df["MoM_PercentageChange"] = pd.to_numeric(df["MoM_PercentageChange"], errors="coerce")
-    if "MoM_AbsoluteChange" in df.columns:
-        df["MoM_AbsoluteChange"] = pd.to_numeric(df["MoM_AbsoluteChange"], errors="coerce")
     return df
 
 
 df_gold = load_data()
 
 # ----------------- SIDEBAR CONTROLS -----------------
-st.sidebar.title("Filter & Slicing")
-
-# Geography filter
+st.sidebar.header("📍 Select Region")
 all_geos = sorted(df_gold["Geography"].unique())
 default_geo = "Canada" if "Canada" in all_geos else all_geos[0]
-selected_geo = st.sidebar.selectbox(
-    "Jurisdiction / Geography", all_geos, index=all_geos.index(default_geo)
+selected_geo = st.sidebar.selectbox("Jurisdiction", all_geos, index=all_geos.index(default_geo))
+
+st.sidebar.markdown("---")
+st.sidebar.markdown(
+    """
+    **About this data:**
+    * **Source:** Statistics Canada (Table 18-10-0245-01)
+    * **Scope:** 2017 to 2026 (Monthly Survey)
+    * **Pipeline:** Built with PySpark & Delta Lake
+    """
 )
 
-# Category filter
-all_categories = sorted(df_gold["BasketCategory"].dropna().unique())
-selected_categories = st.sidebar.multiselect(
-    "Basket Categories",
-    options=all_categories,
-    default=all_categories[:5] if len(all_categories) >= 5 else all_categories,
-)
-
-# Date range filter
-min_date = df_gold["SnapshotDate"].min().to_pydatetime()
-max_date = df_gold["SnapshotDate"].max().to_pydatetime()
-
-selected_date_range = st.sidebar.slider(
-    "Survey Time Window",
-    min_value=min_date,
-    max_value=max_date,
-    value=(min_date, max_date),
-    format="YYYY-MM",
-)
-
-# View Mode
-view_mode = st.sidebar.radio(
-    "Metric View Mode",
-    ["Retail Price ($)", "Cumulative Index (Base 100)", "Month-over-Month Change (%)"],
-)
-
-# Filter dataset
-filtered_df = df_gold[
-    (df_gold["Geography"] == selected_geo)
-    & (df_gold["BasketCategory"].isin(selected_categories))
-    & (df_gold["SnapshotDate"] >= pd.Timestamp(selected_date_range[0]))
-    & (df_gold["SnapshotDate"] <= pd.Timestamp(selected_date_range[1]))
-].copy()
+# Filter dataset to selected geography
+df_geo = df_gold[df_gold["Geography"] == selected_geo].copy()
 
 # ----------------- HEADER & OVERVIEW -----------------
 st.markdown(
-    '<div class="main-header">🇨🇦 Canadian Grocery Intelligence Index</div>',
+    '<div class="main-title">🇨🇦 What Happened to Canadian Grocery Prices? (2017–2026)</div>',
     unsafe_allow_html=True,
 )
 sub_text = (
-    f"Analytics-ready Gold dataset powered by <b>PySpark Medallion Lakehouse</b> "
-    f"& Statistics Canada survey data (<b>{selected_geo}</b> | 2017–2026)"
+    f"Tracking real monthly supermarket prices for staple foods across "
+    f"<b>{selected_geo}</b> over the past 9+ years."
 )
-st.markdown(f'<div class="sub-header">{sub_text}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="sub-title">{sub_text}</div>', unsafe_allow_html=True)
 
-# ----------------- TOP KPI METRIC CARDS -----------------
-col1, col2, col3, col4 = st.columns(4)
-
-total_records = len(filtered_df)
-latest_date_str = (
-    filtered_df["SnapshotDate"].max().strftime("%B %Y") if not filtered_df.empty else "N/A"
+# ----------------- SECTION 1: GROCERY RECEIPT SIMULATOR -----------------
+st.subheader("🛒 1. The Grocery Cart Simulator: 2017 vs. Today")
+st.caption(
+    "Choose grocery staples to see what the exact same shopping bag cost in 2017 compared to today."
 )
 
-if not filtered_df.empty and len(filtered_df["SnapshotDate"].unique()) > 1:
-    first_dt = filtered_df["SnapshotDate"].min()
-    last_dt = filtered_df["SnapshotDate"].max()
-    avg_start = filtered_df[filtered_df["SnapshotDate"] == first_dt]["AveragePrice"].mean()
-    avg_end = filtered_df[filtered_df["SnapshotDate"] == last_dt]["AveragePrice"].mean()
-    cum_pct = ((avg_end - avg_start) / avg_start) * 100 if avg_start > 0 else 0
-    avg_price_display = f"${avg_end:.2f}"
-    cum_pct_display = f"{cum_pct:+.1f}%"
+all_products = sorted(df_geo["ProductName"].unique())
+keywords = [
+    "eggs, 1 dozen",
+    "butter, 454",
+    "milk, 2",
+    "white bread",
+    "bacon, 500",
+    "chicken breasts, per",
+    "beef stewing",
+    "bananas",
+]
+default_cart = [p for p in all_products if any(k in p.lower() for k in keywords)]
+if not default_cart:
+    default_cart = all_products[:5]
+
+selected_cart = st.multiselect(
+    "Select items in your grocery basket:",
+    options=all_products,
+    default=default_cart,
+)
+
+if selected_cart:
+    cart_df = df_geo[df_geo["ProductName"].isin(selected_cart)].copy()
+
+    earliest_date = cart_df["SnapshotDate"].min()
+    latest_date = cart_df["SnapshotDate"].max()
+
+    p_2017_total = 0.0
+    p_2026_total = 0.0
+    item_breakdown = []
+
+    for item in selected_cart:
+        item_df = cart_df[cart_df["ProductName"] == item].sort_values("SnapshotDate")
+        if not item_df.empty:
+            p_start = item_df["AveragePrice"].iloc[0]
+            p_end = item_df["AveragePrice"].iloc[-1]
+            diff = p_end - p_start
+            pct = ((p_end - p_start) / p_start) * 100 if p_start > 0 else 0
+            p_2017_total += p_start
+            p_2026_total += p_end
+            item_breakdown.append(
+                {
+                    "Grocery Item": item,
+                    "2017 Price": f"${p_start:.2f}",
+                    "2026 Price": f"${p_end:.2f}",
+                    "Dollar Increase": f"+${diff:.2f}",
+                    "% Increase": f"{pct:+.1f}%",
+                }
+            )
+
+    total_diff = p_2026_total - p_2017_total
+    total_pct = ((p_2026_total - p_2017_total) / p_2017_total) * 100 if p_2017_total > 0 else 0
+
+    col_r1, col_r2, col_r3 = st.columns(3)
+    start_label = earliest_date.strftime("%B %Y")
+    end_label = latest_date.strftime("%B %Y")
+
+    with col_r1:
+        st.markdown(
+            f"""
+            <div class="receipt-box">
+                <div class="receipt-label">📅 2017 Cart Total</div>
+                <div class="receipt-price">${p_2017_total:.2f}</div>
+                <div style="font-size: 0.85rem; color: #64748B;">
+                    {len(selected_cart)} items ({start_label})
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col_r2:
+        st.markdown(
+            f"""
+            <div class="receipt-box" style="border-color: #EF4444; background: #FEF2F2;">
+                <div class="receipt-label" style="color: #991B1B;">📅 2026 Cart Total</div>
+                <div class="receipt-price" style="color: #991B1B;">${p_2026_total:.2f}</div>
+                <div style="font-size: 0.85rem; color: #991B1B;">
+                    {len(selected_cart)} items ({end_label})
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col_r3:
+        st.markdown(
+            f"""
+            <div class="receipt-box" style="border-color: #DC2626; background: #FFF1F2;">
+                <div class="receipt-label" style="color: #9F1239;">💸 Extra Out of Pocket</div>
+                <div class="receipt-price" style="color: #DC2626;">+${total_diff:.2f}</div>
+                <div class="receipt-change">+{total_pct:.1f}% more expensive</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    with st.expander("📋 View Itemized Price Breakdown Table"):
+        st.dataframe(pd.DataFrame(item_breakdown), use_container_width=True, hide_index=True)
 else:
-    avg_price_display = "N/A"
-    cum_pct_display = "0.0%"
-
-with col1:
-    st.metric("Latest Survey Month", latest_date_str)
-with col2:
-    st.metric("Avg Basket Price", avg_price_display, delta=cum_pct_display)
-with col3:
-    st.metric("Tracked Categories", f"{len(selected_categories)} Selected")
-with col4:
-    st.metric("Curated Observations", f"{total_records:,}")
+    st.info("Please select at least one grocery item above to calculate your cart total.")
 
 st.markdown("---")
 
-# ----------------- MAIN CHARTS -----------------
-if filtered_df.empty:
-    st.warning("No survey records match the selected filters. Please adjust your selections.")
-else:
-    st.subheader(f"1. Price Trajectory: {view_mode}")
+# ----------------- SECTION 2: FOCUSED PRICE EXPLORER -----------------
+st.subheader("📈 2. Interactive Price Explorer (1-on-1 Comparison)")
+st.caption(
+    "Select an item to see its monthly price timeline from 2017 to 2026 with key economic events."
+)
 
-    if view_mode == "Retail Price ($)":
-        fig_ts = px.line(
-            filtered_df,
-            x="SnapshotDate",
-            y="AveragePrice",
-            color="ProductName",
-            title=f"Monthly Average Retail Price by Product ({selected_geo})",
-            labels={
-                "SnapshotDate": "Survey Date",
-                "AveragePrice": "Average Price ($CAD)",
-                "ProductName": "Product",
-            },
-        )
-    elif view_mode == "Cumulative Index (Base 100)":
-
-        def calc_indexed(group):
-            base = group["AveragePrice"].iloc[0]
-            group["IndexedPrice"] = (group["AveragePrice"] / base) * 100 if base > 0 else 100
-            return group
-
-        indexed_df = filtered_df.groupby(["Geography", "ProductName"], group_keys=False).apply(
-            calc_indexed
-        )
-        start_label = selected_date_range[0].strftime("%b %Y")
-        fig_ts = px.line(
-            indexed_df,
-            x="SnapshotDate",
-            y="IndexedPrice",
-            color="ProductName",
-            title=f"Cumulative Inflation Index (Base = 100 at {start_label})",
-            labels={
-                "SnapshotDate": "Survey Date",
-                "IndexedPrice": "Price Index (Base 100)",
-                "ProductName": "Product",
-            },
-        )
-        fig_ts.add_hline(
-            y=100, line_dash="dash", line_color="gray", annotation_text="Baseline (100)"
-        )
-    else:
-        fig_ts = px.line(
-            filtered_df,
-            x="SnapshotDate",
-            y="MoM_PercentageChange",
-            color="ProductName",
-            title=f"Month-over-Month Price Movement (%) ({selected_geo})",
-            labels={
-                "SnapshotDate": "Survey Date",
-                "MoM_PercentageChange": "MoM Change (%)",
-                "ProductName": "Product",
-            },
-        )
-        fig_ts.add_hline(y=0, line_dash="solid", line_color="gray")
-
-    fig_ts.update_layout(
-        hovermode="x unified",
-        legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5),
-        margin=dict(l=20, r=20, t=40, b=20),
-        height=460,
+col_sel1, col_sel2 = st.columns(2)
+with col_sel1:
+    primary_item = st.selectbox(
+        "Primary Grocery Item:",
+        all_products,
+        index=all_products.index("Eggs, 1 dozen") if "Eggs, 1 dozen" in all_products else 0,
     )
-    st.plotly_chart(fig_ts, use_container_width=True)
+with col_sel2:
+    compare_options = ["None"] + [p for p in all_products if p != primary_item]
+    compare_item = st.selectbox("Compare With (Optional):", compare_options, index=0)
 
-    st.markdown("---")
-    col_l, col_r = st.columns(2)
+active_items = [primary_item]
+if compare_item != "None":
+    active_items.append(compare_item)
 
-    with col_l:
-        st.subheader("2. Cumulative Price Inflation by Item")
-        summary_rows = []
-        for (prod, _uom, cat), group in filtered_df.groupby(
-            ["ProductName", "UOM", "BasketCategory"]
-        ):
-            sorted_g = group.sort_values("SnapshotDate")
-            if len(sorted_g) >= 2:
-                p_start = sorted_g["AveragePrice"].iloc[0]
-                p_end = sorted_g["AveragePrice"].iloc[-1]
-                pct_chg = ((p_end - p_start) / p_start) * 100 if p_start > 0 else 0
-                summary_rows.append(
-                    {
-                        "Product": prod,
-                        "Category": cat,
-                        "StartPrice": p_start,
-                        "EndPrice": p_end,
-                        "ChangePct": round(pct_chg, 1),
-                    }
-                )
+explore_df = df_geo[df_geo["ProductName"].isin(active_items)].copy()
 
-        if summary_rows:
-            summary_df = pd.DataFrame(summary_rows).sort_values("ChangePct", ascending=True)
-            y_start = selected_date_range[0].strftime("%Y")
-            y_end = selected_date_range[1].strftime("%Y")
-            fig_bar = px.bar(
-                summary_df,
-                x="ChangePct",
-                y="Product",
-                orientation="h",
-                color="ChangePct",
-                color_continuous_scale="Reds",
-                title=f"Price % Change ({y_start} → {y_end})",
-                labels={"ChangePct": "Cumulative Inflation (%)", "Product": ""},
-            )
-            fig_bar.update_layout(height=380, margin=dict(l=10, r=10, t=40, b=10))
-            st.plotly_chart(fig_bar, use_container_width=True)
+fig_line = go.Figure()
 
-    with col_r:
-        st.subheader("3. MoM Volatility Distribution")
-        mom_clean = filtered_df.dropna(subset=["MoM_PercentageChange"])
-        if not mom_clean.empty:
-            fig_hist = px.box(
-                mom_clean,
-                x="BasketCategory",
-                y="MoM_PercentageChange",
-                color="BasketCategory",
-                title="Monthly Price Volatility Range by Basket Category",
-                labels={"MoM_PercentageChange": "MoM Change (%)", "BasketCategory": "Category"},
-            )
-            fig_hist.update_layout(
-                height=380, showlegend=False, margin=dict(l=10, r=10, t=40, b=10)
-            )
-            st.plotly_chart(fig_hist, use_container_width=True)
+colors = ["#2563EB", "#DC2626"]
+for idx, item_name in enumerate(active_items):
+    sub_df = explore_df[explore_df["ProductName"] == item_name].sort_values("SnapshotDate")
+    fig_line.add_trace(
+        go.Scatter(
+            x=sub_df["SnapshotDate"],
+            y=sub_df["AveragePrice"],
+            mode="lines",
+            name=item_name,
+            line=dict(width=3, color=colors[idx % len(colors)]),
+            hovertemplate="<b>%{x|%b %Y}</b><br>Price: <b>$%{y:.2f}</b><extra></extra>",
+        )
+    )
 
-# ----------------- DATA TABLE & LINEAGE -----------------
+# Add event annotations
+fig_line.add_vline(
+    x="2020-03-01",
+    line_dash="dot",
+    line_color="#64748B",
+    annotation_text="COVID Supply Shock (2020)",
+)
+fig_line.add_vline(
+    x="2022-06-01",
+    line_dash="dot",
+    line_color="#DC2626",
+    annotation_text="Peak Inflation (2022)",
+)
+
+title_text = f"Price History: {' vs '.join(active_items)} ({selected_geo})"
+fig_line.update_layout(
+    title=dict(text=title_text, font=dict(size=16)),
+    xaxis=dict(title="Survey Year", showgrid=True, gridcolor="#F1F5F9"),
+    yaxis=dict(title="Average Price ($CAD)", tickprefix="$", showgrid=True, gridcolor="#F1F5F9"),
+    hovermode="x unified",
+    legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5),
+    height=440,
+    plot_bgcolor="white",
+    margin=dict(l=20, r=20, t=40, b=20),
+)
+
+st.plotly_chart(fig_line, use_container_width=True)
+
 st.markdown("---")
-with st.expander("🔍 View & Download Curated Gold Table Records"):
+
+# ----------------- SECTION 3: INFLATION LEADERBOARD & WORST YEARS -----------------
+col_chart_l, col_chart_r = st.columns(2)
+
+with col_chart_l:
+    st.subheader("🏆 3. Inflation Leaderboard (2017 → 2026)")
+    st.caption("Which staple items had the highest percentage price increase?")
+
+    all_summary = []
+    for prod_name, group in df_geo.groupby("ProductName"):
+        sorted_g = group.sort_values("SnapshotDate")
+        if len(sorted_g) >= 2:
+            p_s = sorted_g["AveragePrice"].iloc[0]
+            p_e = sorted_g["AveragePrice"].iloc[-1]
+            pct = ((p_e - p_s) / p_s) * 100 if p_s > 0 else 0
+            all_summary.append(
+                {
+                    "Product": prod_name,
+                    "Cumulative Inflation (%)": round(pct, 1),
+                    "2017 Price": f"${p_s:.2f}",
+                    "2026 Price": f"${p_e:.2f}",
+                }
+            )
+
+    leader_df = pd.DataFrame(all_summary).sort_values("Cumulative Inflation (%)", ascending=True)
+
+    fig_rank = px.bar(
+        leader_df,
+        x="Cumulative Inflation (%)",
+        y="Product",
+        orientation="h",
+        color="Cumulative Inflation (%)",
+        color_continuous_scale=["#10B981", "#F59E0B", "#EF4444", "#991B1B"],
+        text="Cumulative Inflation (%)",
+        title=f"Total Price Increase from 2017 to 2026 ({selected_geo})",
+    )
+    fig_rank.update_traces(texttemplate="%{text:+.1f}%", textposition="outside")
+    fig_rank.update_layout(
+        height=420,
+        plot_bgcolor="white",
+        margin=dict(l=10, r=30, t=40, b=10),
+        xaxis=dict(showgrid=True, gridcolor="#F1F5F9"),
+    )
+    st.plotly_chart(fig_rank, use_container_width=True)
+
+with col_chart_r:
+    st.subheader("📅 4. The Worst Inflation Years")
+    st.caption("Average year-over-year food inflation rate across all staples.")
+
+    df_geo["Year"] = df_geo["SnapshotDate"].dt.year
+    yearly_avg = df_geo.groupby("Year")["AveragePrice"].mean().reset_index()
+    yearly_avg["YoY_Change"] = yearly_avg["AveragePrice"].pct_change() * 100
+    yearly_clean = yearly_avg.dropna(subset=["YoY_Change"])
+
+    fig_yearly = px.bar(
+        yearly_clean,
+        x="Year",
+        y="YoY_Change",
+        color="YoY_Change",
+        color_continuous_scale="Reds",
+        text="YoY_Change",
+        title=f"Average Annual Price Change % ({selected_geo})",
+        labels={"YoY_Change": "Annual Inflation (%)", "Year": "Year"},
+    )
+    fig_yearly.update_traces(texttemplate="%{text:+.1f}%", textposition="outside")
+    fig_yearly.update_layout(
+        height=420,
+        plot_bgcolor="white",
+        margin=dict(l=10, r=10, t=40, b=10),
+        yaxis=dict(showgrid=True, gridcolor="#F1F5F9", ticksuffix="%"),
+    )
+    st.plotly_chart(fig_yearly, use_container_width=True)
+
+# ----------------- SECTION 5: DATA LINEAGE & DOWNLOAD -----------------
+st.markdown("---")
+with st.expander("🔍 View & Download Curated Gold Records"):
     table_cols = [
         "SnapshotDate",
         "Geography",
@@ -278,7 +371,7 @@ with st.expander("🔍 View & Download Curated Gold Table Records"):
         "MoM_PercentageChange",
         "GoldRecordId",
     ]
-    sorted_df = filtered_df[table_cols].sort_values(
+    sorted_df = df_geo[table_cols].sort_values(
         ["SnapshotDate", "ProductName"], ascending=[False, True]
     )
     st.dataframe(
@@ -286,28 +379,27 @@ with st.expander("🔍 View & Download Curated Gold Table Records"):
         use_container_width=True,
         hide_index=True,
     )
-
-    csv_data = filtered_df.to_csv(index=False).encode("utf-8")
+    csv_bytes = df_geo.to_csv(index=False).encode("utf-8")
     st.download_button(
-        label="📥 Download Filtered Gold Extract (CSV)",
-        data=csv_data,
-        file_name=f"grocery_index_{selected_geo.lower()}_extract.csv",
+        label="📥 Download Gold Dataset (CSV)",
+        data=csv_bytes,
+        file_name=f"grocery_prices_{selected_geo.lower()}_gold.csv",
         mime="text/csv",
     )
 
-with st.expander("🏛️ Data Engineering Pipeline & Lineage Overview"):
+with st.expander("🏛️ Data Engineering Pipeline & Architecture"):
     st.markdown(
         """
         ### Medallion Lakehouse Architecture
-        * **Bronze Tier:** Ingests raw Statistics Canada Table 18-10-0245-01 CSVs with UTF-8 BOM
-          sanitization and audit lineage (`_batch_id`, `ingestion_timestamp`).
-        * **Silver Tier:** Standardizes data types, trims product names, computes deterministic
-          SHA-256 surrogate keys (`RecordId`), and routes malformed/duplicate rows to a
-          **Dead-Letter Quarantine Table** (`quarantine_reason`).
-        * **Gold Tier:** Applies decoupled prioritized regex taxonomy matching and performs
-          strict consecutive calendar-month window analytics (`F.lag`) to compute valid MoM
-          price movements.
-        * **Serving Tier:** Curated Gold extract powers this Streamlit application for pricing
-          intelligence.
+        * **Bronze Tier (Raw Ingestion):** Ingests raw Statistics Canada Table 18-10-0245-01 CSVs
+          with automated UTF-8 BOM (`\\ufeff`) sanitization and batch audit metadata (`_batch_id`,
+          `ingestion_timestamp`).
+        * **Silver Tier (Cleansing & Quality):** Standardizes types, trims strings, generates
+          deterministic SHA-256 surrogate keys (`RecordId`), and routes malformed/duplicate rows to
+          a **Dead-Letter Quarantine Table** (`quarantine_reason`).
+        * **Gold Tier (Analytics & Windowing):** Applies decoupled regex taxonomy matching and
+          executes strict consecutive calendar-month window analytics (`F.lag`) to compute valid
+          MoM price changes.
+        * **Serving Tier:** Powers this interactive Streamlit application.
         """
     )

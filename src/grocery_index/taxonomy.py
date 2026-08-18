@@ -17,15 +17,15 @@ class BasketRule(NamedTuple):
 # Configurable Basket Taxonomy Rules (ordered by priority to eliminate false matches)
 DEFAULT_BASKET_TAXONOMY: tuple[BasketRule, ...] = (
     BasketRule(1, "Bacon", r"(?i)\bbacon\b"),
-    BasketRule(2, "Butter", r"(?i)\bbutter\b(?!.*tarts|.*cookies)"),
+    BasketRule(2, "Butter", r"(?i)^(?!.*peanut).*?\bbutter\b"),
     BasketRule(3, "Eggs", r"(?i)\beggs?\b"),
     BasketRule(4, "Milk", r"(?i)\bmilk\b(?!.*chocolate\s+bar)"),
     BasketRule(5, "Chicken", r"(?i)\bchicken\b"),
     BasketRule(6, "Beef", r"(?i)\bbeef\b"),
     BasketRule(7, "Bananas", r"(?i)\bbananas?\b"),
-    BasketRule(8, "Potatoes", r"(?i)\bpotatoes?\b"),
+    BasketRule(8, "Potatoes", r"(?i)^(?!.*french).*?\bpotatoes?\b"),
     BasketRule(9, "Coffee", r"(?i)\bcoffee\b"),
-    BasketRule(10, "Bread", r"(?i)\bbread\b"),
+    BasketRule(10, "Bread", r"(?i)^(?!.*crackers).*?\bbread\b"),
 )
 
 BASKET_CATEGORIES: tuple[str, ...] = tuple(rule.category for rule in DEFAULT_BASKET_TAXONOMY)
