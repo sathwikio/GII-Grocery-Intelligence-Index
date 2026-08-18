@@ -21,9 +21,9 @@ jobs:
           cache: pip
       - run: pip install ruff
       - name: Ruff Linter
-        run: ruff check src tests jobs
+        run: ruff check src tests jobs streamlit_app.py
       - name: Ruff Formatter Check
-        run: ruff format --check src tests jobs
+        run: ruff format --check src tests jobs streamlit_app.py
 
   test:
     name: PySpark Test Suite (Python ${{ matrix.python-version }})
@@ -62,4 +62,7 @@ jobs:
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@main
       - name: Validate Dev Bundle Target
+        env:
+          DATABRICKS_HOST: "https://dummy.cloud.databricks.com"
+          DATABRICKS_TOKEN: "dapi_dummy_token_for_ci_validation"
         run: databricks bundle validate -t dev
