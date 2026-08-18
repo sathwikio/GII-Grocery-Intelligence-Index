@@ -1,0 +1,55 @@
+REF_DATE,GEO,DGUID,Products,UOM,UOM_ID,SCALAR_FACTOR,SCALAR_ID,VECTOR,COORDINATE,VALUE,STATUS,SYMBOL,TERMINATED,DECIMALS
+2025-10,Canada,2016A000011124,Milk, 2 litres,Dollars,235,units,0,v123456,1.1,5.29,,,2
+2025-10,Canada,2016A000011124,Eggs, 1 dozen,Dollars,235,units,0,v123457,1.2,4.19,,,2
+2025-10,Canada,2016A000011124,Bread, 675 grams,Dollars,235,units,0,v123458,1.3,3.49,,,2
+2025-10,Canada,2016A000011124,Butter, 454 grams,Dollars,235,units,0,v123459,1.4,5.99,,,2
+2025-10,Canada,2016A000011124,Chicken breasts, per kilogram,Dollars,235,units,0,v123460,1.5,14.50,,,2
+2025-10,Canada,2016A000011124,Bananas, per kilogram,Dollars,235,units,0,v123461,1.6,1.79,,,2
+2025-10,Canada,2016A000011124,Potatoes, 4.54 kilograms,Dollars,235,units,0,v123462,1.7,6.29,,,2
+2025-10,Canada,2016A000011124,Beef stewing cuts, per kilogram,Dollars,235,units,0,v123463,1.8,18.99,,,2
+2025-10,Canada,2016A000011124,Roasted coffee, 340 grams,Dollars,235,units,0,v123464,1.9,6.79,,,2
+2025-10,Canada,2016A000011124,Bacon, 500 grams,Dollars,235,units,0,v123465,1.10,7.49,,,2
+2025-10,Ontario,2016A000235,Milk, 2 litres,Dollars,235,units,0,v123466,2.1,5.39,,,2
+2025-10,Ontario,2016A000235,Eggs, 1 dozen,Dollars,235,units,0,v123467,2.2,4.29,,,2
+2025-10,Ontario,2016A000235,Chicken breasts, per kilogram,Dollars,235,units,0,v123468,2.3,14.75,,,2
+2025-11,Canada,2016A000011124,Milk, 2 litres,Dollars,235,units,0,v123456,1.1,5.35,,,2
+2025-11,Canada,2016A000011124,Eggs, 1 dozen,Dollars,235,units,0,v123457,1.2,4.25,,,2
+2025-11,Canada,2016A000011124,Bread, 675 grams,Dollars,235,units,0,v123458,1.3,3.55,,,2
+2025-11,Canada,2016A000011124,Butter, 454 grams,Dollars,235,units,0,v123459,1.4,6.09,,,2
+2025-11,Canada,2016A000011124,Chicken breasts, per kilogram,Dollars,235,units,0,v123460,1.5,14.20,,,2
+2025-11,Canada,2016A000011124,Bananas, per kilogram,Dollars,235,units,0,v123461,1.6,1.85,,,2
+2025-11,Canada,2016A000011124,Potatoes, 4.54 kilograms,Dollars,235,units,0,v123462,1.7,6.19,,,2
+2025-11,Canada,2016A000011124,Beef stewing cuts, per kilogram,Dollars,235,units,0,v123463,1.8,19.25,,,2
+2025-11,Canada,2016A000011124,Roasted coffee, 340 grams,Dollars,235,units,0,v123464,1.9,6.99,,,2
+2025-11,Canada,2016A000011124,Bacon, 500 grams,Dollars,235,units,0,v123465,1.10,7.69,,,2
+2025-11,Ontario,2016A000235,Milk, 2 litres,Dollars,235,units,0,v123466,2.1,5.45,,,2
+2025-11,Ontario,2016A000235,Eggs, 1 dozen,Dollars,235,units,0,v123467,2.2,4.35,,,2
+2025-11,Ontario,2016A000235,Chicken breasts, per kilogram,Dollars,235,units,0,v123468,2.3,14.40,,,2
+2025-12,Canada,2016A000011124,Milk, 2 litres,Dollars,235,units,0,v123456,1.1,5.49,,,2
+2025-12,Canada,2016A000011124,Eggs, 1 dozen,Dollars,235,units,0,v123457,1.2,4.39,,,2
+2025-12,Canada,2016A000011124,Bread, 675 grams,Dollars,235,units,0,v123458,1.3,3.60,,,2
+2025-12,Canada,2016A000011124,Butter, 454 grams,Dollars,235,units,0,v123459,1.4,6.19,,,2
+2025-12,Canada,2016A000011124,Chicken breasts, per kilogram,Dollars,235,units,0,v123460,1.5,14.80,,,2
+2025-12,Canada,2016A000011124,Bananas, per kilogram,Dollars,235,units,0,v123461,1.6,1.89,,,2
+2025-12,Canada,2016A000011124,Potatoes, 4.54 kilograms,Dollars,235,units,0,v123462,1.7,6.39,,,2
+2025-12,Canada,2016A000011124,Beef stewing cuts, per kilogram,Dollars,235,units,0,v123463,1.8,19.80,,,2
+2025-12,Canada,2016A000011124,Roasted coffee, 340 grams,Dollars,235,units,0,v123464,1.9,7.19,,,2
+2025-12,Canada,2016A000011124,Bacon, 500 grams,Dollars,235,units,0,v123465,1.10,7.89,,,2
+2025-12,Ontario,2016A000235,Milk, 2 litres,Dollars,235,units,0,v123466,2.1,5.55,,,2
+2025-12,Ontario,2016A000235,Eggs, 1 dozen,Dollars,235,units,0,v123467,2.2,4.45,,,2
+2025-12,Ontario,2016A000235,Chicken breasts, per kilogram,Dollars,235,units,0,v123468,2.3,14.99,,,2
+2026-01,Canada,2016A000011124,Milk, 2 litres,Dollars,235,units,0,v123456,1.1,5.59,,,2
+2026-01,Canada,2016A000011124,Eggs, 1 dozen,Dollars,235,units,0,v123457,1.2,4.49,,,2
+2026-01,Canada,2016A000011124,Bread, 675 grams,Dollars,235,units,0,v123458,1.3,3.65,,,2
+2026-01,Canada,2016A000011124,Butter, 454 grams,Dollars,235,units,0,v123459,1.4,6.29,,,2
+2026-01,Canada,2016A000011124,Chicken breasts, per kilogram,Dollars,235,units,0,v123460,1.5,15.10,,,2
+2026-01,Canada,2016A000011124,Bananas, per kilogram,Dollars,235,units,0,v123461,1.6,1.92,,,2
+2026-01,Canada,2016A000011124,Potatoes, 4.54 kilograms,Dollars,235,units,0,v123462,1.7,6.45,,,2
+2026-01,Canada,2016A000011124,Beef stewing cuts, per kilogram,Dollars,235,units,0,v123463,1.8,20.10,,,2
+2026-01,Canada,2016A000011124,Roasted coffee, 340 grams,Dollars,235,units,0,v123464,1.9,7.35,,,2
+2026-01,Canada,2016A000011124,Bacon, 500 grams,Dollars,235,units,0,v123465,1.10,8.05,,,2
+2026-01,Ontario,2016A000235,Milk, 2 litres,Dollars,235,units,0,v123466,2.1,5.65,,,2
+2026-01,Ontario,2016A000235,Eggs, 1 dozen,Dollars,235,units,0,v123467,2.2,4.55,,,2
+2026-01,Ontario,2016A000235,Chicken breasts, per kilogram,Dollars,235,units,0,v123468,2.3,15.30,,,2
+2026-01,Quebec,2016A000236,Milk, 2 litres,Dollars,235,units,0,v123469,3.1,5.15,,,2
+2026-01,Canada,2016A000011124,Paper towels, 6 rolls,Dollars,235,units,0,v123470,1.11,9.99,,,2

@@ -5,12 +5,20 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "grocery-intelligence-index"
 version = "0.1.0"
-description = "Testable PySpark transformations for the Grocery Intelligence Index"
+description = "Enterprise PySpark Lakehouse pipeline for the Grocery Intelligence Index"
+readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["pyspark>=3.5,<4"]
+dependencies = [
+    "pyspark>=3.5,<4",
+]
 
 [project.optional-dependencies]
-dev = ["build>=1.2", "pytest>=8,<9", "ruff>=0.9,<1"]
+dev = [
+    "build>=1.2",
+    "pytest>=8,<9",
+    "pytest-cov>=4.1",
+    "ruff>=0.9,<1",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -18,8 +26,13 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+addopts = "-v --strict-markers"
 
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+
 
