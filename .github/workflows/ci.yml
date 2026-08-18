@@ -48,9 +48,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
       - name: Run PySpark Tests with Coverage
+        env:
+          PYSPARK_SUBMIT_ARGS: "--packages io.delta:delta-spark_2.12:3.2.0 --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog pyspark-shell"
         run: |
           pytest --cov=grocery_index --cov-report=term-missing --cov-report=xml
       - name: Verify CLI Local Execution
+        env:
+          PYSPARK_SUBMIT_ARGS: "--packages io.delta:delta-spark_2.12:3.2.0 --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog pyspark-shell"
         run: |
           python -m grocery_index.cli run --env local
 

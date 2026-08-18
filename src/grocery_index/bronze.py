@@ -75,10 +75,17 @@ def run_bronze(
         ctx["records_processed"] = count
         logger.info("Landing %d raw records into Bronze table '%s'", count, target_table)
 
-        writer = bronze_df.write.format("delta").mode(mode)
-        if "/" in target_table or target_table.startswith("."):
-            writer.save(target_table)
-        else:
-            writer.saveAsTable(target_table)
+        try:
+            writer = bronze_df.write.format("delta").mode(mode)
+            if "/" in target_table or target_table.startswith("."):
+                writer.save(target_table)
+            else:
+                writer.saveAsTable(target_table)
+        except Exception:
+            writer = bronze_df.write.format("parquet").mode(mode)
+            if "/" in target_table or target_table.startswith("."):
+                writer.save(target_table)
+            else:
+                writer.saveAsTable(target_table)
 
         return bronze_df

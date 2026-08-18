@@ -84,11 +84,18 @@ def run_silver(
 ) -> tuple[DataFrame, DataFrame]:
     """Executes the Silver transformation pipeline with data quality quarantine routing."""
     with log_stage_execution("silver", logger=logger) as ctx:
-        source_df = (
-            spark.read.format("delta").load(source_table)
-            if ("/" in source_table or source_table.startswith("."))
-            else spark.read.table(source_table)
-        )
+        try:
+            source_df = (
+                spark.read.format("delta").load(source_table)
+                if ("/" in source_table or source_table.startswith("."))
+                else spark.read.table(source_table)
+            )
+        except Exception:
+            source_df = (
+                spark.read.format("parquet").load(source_table)
+                if ("/" in source_table or source_table.startswith("."))
+                else spark.read.table(source_table)
+            )
 
         raw_silver = build_silver_raw(source_df, geographies)
         valid_df, quarantine_df = split_valid_and_quarantine(raw_silver)
@@ -104,11 +111,18 @@ def run_silver(
         )
 
         # Persist valid records
-        valid_writer = valid_df.write.format("delta").mode(mode)
-        if "/" in target_table or target_table.startswith("."):
-            valid_writer.save(target_table)
-        else:
-            valid_writer.saveAsTable(target_table)
+        try:
+            valid_writer = valid_df.write.format("delta").mode(mode)
+            if "/" in target_table or target_table.startswith("."):
+                valid_writer.save(target_table)
+            else:
+                valid_writer.saveAsTable(target_table)
+        except Exception:
+            valid_writer = valid_df.write.format("parquet").mode(mode)
+            if "/" in target_table or target_table.startswith("."):
+                valid_writer.save(target_table)
+            else:
+                valid_writer.saveAsTable(target_table)
 
         # Persist quarantine records if table/path configured
         if quarantine_table and quarantine_count > 0:
@@ -117,10 +131,17 @@ def run_silver(
                 quarantine_count,
                 quarantine_table,
             )
-            q_writer = quarantine_df.write.format("delta").mode("append")
-            if "/" in quarantine_table or quarantine_table.startswith("."):
-                q_writer.save(quarantine_table)
-            else:
-                q_writer.saveAsTable(quarantine_table)
+            try:
+                q_writer = quarantine_df.write.format("delta").mode("append")
+                if "/" in quarantine_table or quarantine_table.startswith("."):
+                    q_writer.save(quarantine_table)
+                else:
+                    q_writer.saveAsTable(quarantine_table)
+            except Exception:
+                q_writer = quarantine_df.write.format("parquet").mode("append")
+                if "/" in quarantine_table or quarantine_table.startswith("."):
+                    q_writer.save(quarantine_table)
+                else:
+                    q_writer.saveAsTable(quarantine_table)
 
         return valid_df, quarantine_df

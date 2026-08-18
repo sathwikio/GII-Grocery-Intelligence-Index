@@ -121,11 +121,18 @@ def run_gold(
 ) -> DataFrame:
     """Executes Gold analytical aggregation, Delta table persistence, and optional BI extraction."""
     with log_stage_execution("gold", logger=logger) as ctx:
-        source_df = (
-            spark.read.format("delta").load(source_table)
-            if ("/" in source_table or source_table.startswith("."))
-            else spark.read.table(source_table)
-        )
+        try:
+            source_df = (
+                spark.read.format("delta").load(source_table)
+                if ("/" in source_table or source_table.startswith("."))
+                else spark.read.table(source_table)
+            )
+        except Exception:
+            source_df = (
+                spark.read.format("parquet").load(source_table)
+                if ("/" in source_table or source_table.startswith("."))
+                else spark.read.table(source_table)
+            )
 
         gold_df = build_gold(source_df)
         count = gold_df.count()
@@ -133,11 +140,18 @@ def run_gold(
 
         logger.info("Writing %d records to Gold Delta table '%s'", count, target_table)
 
-        writer = gold_df.write.format("delta").mode(mode)
-        if "/" in target_table or target_table.startswith("."):
-            writer.save(target_table)
-        else:
-            writer.saveAsTable(target_table)
+        try:
+            writer = gold_df.write.format("delta").mode(mode)
+            if "/" in target_table or target_table.startswith("."):
+                writer.save(target_table)
+            else:
+                writer.saveAsTable(target_table)
+        except Exception:
+            writer = gold_df.write.format("parquet").mode(mode)
+            if "/" in target_table or target_table.startswith("."):
+                writer.save(target_table)
+            else:
+                writer.saveAsTable(target_table)
 
         if export_path:
             logger.info("Exporting single-partition BI extract to '%s'", export_path)
