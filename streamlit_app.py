@@ -574,45 +574,11 @@ with tab_trends:
 # TAB 3: LAKEHOUSE LINEAGE & EXPORT
 # =========================================================================
 with tab_pipeline:
-    st.subheader("Lakehouse Data Pipeline & Audit Lineage")
-    st.markdown(
-        """
-        The **Grocery Intelligence Index (GII)** transforms raw official public statistics into
-        clean, auditable, and queryable analytical datasets using a Medallion Lakehouse pattern.
-        """
-    )
-
-    col_pipe_l, col_pipe_r = st.columns(2)
-    with col_pipe_l:
-        st.markdown(
-            """
-            #### Pipeline Specifications
-            * **Bronze Tier (Raw Landing):** Ingests raw Statistics Canada Table 18-10-0245-01 CSVs,
-              sanitizes UTF-8 BOM (`\ufeff`) markers, and attaches batch audit lineage metadata
-              (`_batch_id`, `ingestion_timestamp`).
-            * **Silver Tier (Quality & Quarantine):** Standardizes types, trims text fields,
-              generates deterministic SHA-256 surrogate keys (`RecordId`), and automatically routes
-              malformed records to a **Dead-Letter Quarantine Table** (`quarantine_reason`).
-            * **Gold Tier (Analytics & Windowing):** Applies decoupled regex taxonomy matching and
-              executes strict consecutive calendar-month window calculations (`F.lag`) to compute
-              valid month-over-month price movements.
-            """
-        )
-    with col_pipe_r:
-        st.markdown(
-            """
-            #### Architecture Decisions (ADRs)
-            * **ADR 001:** Medallion Delta Lake architecture with schema evolution controls.
-            * **ADR 002:** Strict SHA-256 surrogate key derivation (`SnapshotDate || Product`).
-            * **ADR 003:** Non-blocking dead-letter quarantine table routing for zero data loss.
-            * **ADR 004:** Consecutive calendar-month diff windowing (`months_between == 1`).
-            * **ADR 005:** PySpark execution engine for enterprise scalability.
-            * **ADR 006:** Decoupled regex-based basket category taxonomy.
-            """
-        )
-
-    st.markdown("---")
     st.subheader("Curated Gold Dataset Viewer & Export")
+    st.caption(
+        f"Inspect and download the pre-aggregated Gold tier dataset for {selected_geo} "
+        "(includes monthly prices, consecutive MoM changes, and deterministic surrogate keys)."
+    )
 
     table_cols = [
         "SnapshotDate",
@@ -633,10 +599,50 @@ with tab_pipeline:
         use_container_width=True,
         hide_index=True,
     )
+
     csv_bytes = df_geo.to_csv(index=False).encode("utf-8")
     st.download_button(
-        label="Download Curated Gold Dataset (CSV)",
+        label=f"📥 Download {selected_geo} Gold Dataset (CSV)",
         data=csv_bytes,
         file_name=f"gii_grocery_prices_{selected_geo.lower()}_gold.csv",
         mime="text/csv",
     )
+
+    st.markdown("---")
+    st.subheader("Pipeline Architecture & Design Decisions")
+
+    col_arch1, col_arch2 = st.columns(2)
+    with col_arch1:
+        st.markdown(
+            """
+            <div class="era-card">
+                <div class="era-title">Medallion Ingestion & Quality Flow</div>
+                <div class="era-desc">
+                    <b>Bronze Tier (Raw):</b> Ingests Statistics Canada survey tables, handles
+                    UTF-8 BOM markers, and attaches batch audit lineage metadata.<br><br>
+                    <b>Silver Tier (Cleansing):</b> Trims product grains, computes deterministic
+                    SHA-256 surrogate keys, and routes malformed records to Quarantine.<br><br>
+                    <b>Gold Tier (Serving):</b> Applies regex taxonomy rules and calculates
+                    consecutive calendar-month window lags (<code>F.lag</code>) for MoM pricing.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col_arch2:
+        st.markdown(
+            """
+            <div class="era-card">
+                <div class="era-title">Technical Governance & Contracts</div>
+                <div class="era-desc">
+                    <b>Schema Contracts:</b> Strict non-null primary keys and threshold checks
+                    prevent silent data corruption.<br><br>
+                    <b>Idempotent Pipeline:</b> Deterministic surrogate keys ensure safe backfills
+                    and zero duplicate records across runs.<br><br>
+                    <b>Documentation:</b> ADRs, data contracts, and cluster runbooks are versioned
+                    in the repository <code>docs/</code> directory.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
