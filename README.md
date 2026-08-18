@@ -55,26 +55,38 @@ This pipeline processes **138,816 historical survey records** published by Stati
 ```mermaid
 flowchart TD
     subgraph Landing["1. Ingestion Tier"]
-        SourceCSV["StatCan CSV<br/>(Table 18-10-0245-01: 2017–2026)"] --> BronzeJob["bronze.py<br/>BOM Sanitization + Lineage Audit Metadata"]
-        BronzeJob --> BronzeDelta[("Bronze Delta Table<br/>workspace.bronze.grocery_prices")]
+        SourceCSV["StatCan CSV Table 18-10-0245-01<br/>(2017-2026 Monthly Drops)"]
+        BronzeJob["bronze.py<br/>UTF-8 BOM Sanitization & Lineage Metadata"]
+        BronzeDelta[("Bronze Delta Table<br/>workspace.bronze.grocery_prices")]
+        SourceCSV --> BronzeJob
+        BronzeJob --> BronzeDelta
     end
 
     subgraph SilverTier["2. Cleansing & Quality Gate"]
-        BronzeDelta --> SilverJob["silver.py<br/>Standardize, Trim, Surrogate Key (SHA-256)"]
-        SilverJob --> DQEngine{"Data Quality Gate<br/>Non-null, Positive Price, Business Key"}
-        DQEngine -->|Valid Records| SilverDelta[("Silver Delta Table<br/>workspace.silver.grocery_prices")]
-        DQEngine -->|Malformed / Duplicates| QuarantineDelta[("Silver Quarantine Table<br/>workspace.silver.grocery_prices_quarantine")]
+        SilverJob["silver.py<br/>Standardize, Trim & SHA-256 Surrogate Key"]
+        DQEngine{"Data Quality Gate<br/>Non-null, Positive Price, Unique Grain"}
+        SilverDelta[("Silver Delta Table<br/>workspace.silver.grocery_prices")]
+        QuarantineDelta[("Silver Quarantine Table<br/>workspace.silver.grocery_prices_quarantine")]
+        SilverJob --> DQEngine
+        DQEngine -->|Valid Records| SilverDelta
+        DQEngine -->|Malformed or Duplicates| QuarantineDelta
     end
 
-    subgraph GoldTier["3. Analytics & Metrics"]
-        SilverDelta --> GoldJob["gold.py<br/>Decoupled Taxonomy + Strict MoM Windowing"]
-        GoldJob --> GoldDelta[("Gold Delta Table<br/>workspace.gold.grocery_prices")]
-        GoldJob --> GoldExtract["Curated Gold Extract<br/>data/export/grocery_index_extract.csv"]
+    subgraph GoldTier["3. Analytics & Metrics Tier"]
+        GoldJob["gold.py<br/>Decoupled Taxonomy & Strict MoM Windowing"]
+        GoldDelta[("Gold Delta Table<br/>workspace.gold.grocery_prices")]
+        GoldExtract["Curated Gold Extract<br/>data/export/grocery_index_extract.csv"]
+        GoldJob --> GoldDelta
+        GoldJob --> GoldExtract
     end
 
-    subgraph ServingTier["4. Interactive BI Serving"]
-        GoldExtract --> StreamlitApp["Streamlit Cloud Application<br/>Basket Simulator • Price Explorer • Macro Leaderboard"]
+    subgraph ServingTier["4. Interactive BI Serving Tier"]
+        StreamlitApp["Streamlit Cloud Application<br/>Basket Simulator | Price Explorer | Leaderboard"]
     end
+
+    BronzeDelta --> SilverJob
+    SilverDelta --> GoldJob
+    GoldExtract --> StreamlitApp
 ```
 
 ---
