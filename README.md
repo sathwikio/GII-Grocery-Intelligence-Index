@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
 [![CI](https://img.shields.io/github/actions/workflow/status/sathwikio/GII-Grocery-Intelligence-Index/ci.yml?branch=main&style=flat&label=CI)](https://github.com/sathwikio/GII-Grocery-Intelligence-Index/actions)
 
-> **Live Interactive Application:** [https://gii-grocery-intelligence-index-ssg.streamlit.app/](https://gii-grocery-intelligence-index-ssg.streamlit.app/)
+
 
 A PySpark and Delta Lake pipeline that ingests monthly Canadian grocery price surveys from **Statistics Canada (Table 18-10-0245-01)**, standardizes product and unit grains, enforces schema and data quality gates with dead-letter quarantine routing, and generates calendar-aligned Month-over-Month (MoM) price movement metrics across 10 staple grocery basket categories from 2017 to 2026.
 
