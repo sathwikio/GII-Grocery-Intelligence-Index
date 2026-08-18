@@ -17,10 +17,10 @@ install:
 	$(PYTHON) -m pip install -e ".[dev]"
 
 lint:
-	ruff check src tests jobs
+	ruff check src tests jobs streamlit_app.py
 
 format:
-	ruff format src tests jobs
+	ruff format src tests jobs streamlit_app.py
 
 test:
 	pytest
@@ -33,5 +33,5 @@ run-local:
 
 clean:
 	rm -rf build/ dist/ *.egg-info .pytest_cache .coverage htmlcov
-	rm -rf data/delta data/export
+	rm -rf data/delta
 	find . -type d -name "__pycache__" -exec rm -rf {} +

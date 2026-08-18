@@ -66,10 +66,14 @@ flowchart TD
         DQEngine -->|Malformed / Duplicates| QuarantineDelta[("Silver Quarantine Table<br/>workspace.silver.grocery_prices_quarantine")]
     end
 
-    subgraph GoldTier["3. Analytics & Serving"]
+    subgraph GoldTier["3. Analytics & Metrics"]
         SilverDelta --> GoldJob["gold.py<br/>Decoupled Taxonomy + Strict MoM Windowing"]
         GoldJob --> GoldDelta[("Gold Delta Table<br/>workspace.gold.grocery_prices")]
-        GoldJob --> GoldExtract["Curated BI Extract<br/>Single-Partition CSV / Parquet"]
+        GoldJob --> GoldExtract["Curated Gold Extract<br/>data/export/grocery_index_extract.csv"]
+    end
+
+    subgraph ServingTier["4. Interactive BI Serving"]
+        GoldExtract --> StreamlitApp["Streamlit Cloud Application<br/>Basket Simulator • Price Explorer • Macro Leaderboard"]
     end
 ```
 

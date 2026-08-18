@@ -92,3 +92,18 @@ Deriving grocery basket categories via basic substring matching (e.g. `product.c
 
 ### Decision
 We decoupled basket taxonomy into a dedicated module (`src/grocery_index/taxonomy.py`) with prioritized regex rules and word boundary enforcement (`\b`). Rules are evaluated in priority order to guarantee deterministic classification.
+
+---
+
+## ADR 007: Serving Tier Architecture & Pre-Aggregated Gold Extract
+
+### Status
+**Accepted**
+
+### Context
+Downstream business intelligence and executive dashboard consumers require low-latency, interactive exploration without incurring persistent Databricks cluster spin-up latency or cloud warehouse compute costs.
+
+### Decision
+1. **Pre-Aggregated Serving Extract**: The Gold pipeline stage generates an analytical dataset (`data/export/grocery_index_extract.csv`) containing pre-computed MoM percentage changes and surrogate keys.
+2. **Serverless UI Deployment**: An interactive Python application (`streamlit_app.py`) is deployed to Streamlit Community Cloud, providing instantaneous sub-second query latency and zero persistent server idle costs.
+3. **Dual Consumption Patterns**: Enterprise BI tools (PowerBI, Tableau) query Delta Lake tables directly via Databricks SQL Warehouses, while the public interactive application consumes the curated extract.
