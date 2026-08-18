@@ -24,67 +24,18 @@ st.markdown(
 
     /* Override Streamlit Multiselect Pill Tags to Calm Indigo / Slate */
     span[data-baseweb="tag"] {
-        background-color: #EEF2FF !important;
-        border: 1px solid #C7D2FE !important;
+        background-color: rgba(99, 102, 241, 0.12) !important;
+        border: 1px solid rgba(99, 102, 241, 0.3) !important;
         border-radius: 6px !important;
         padding: 2px 6px !important;
     }
     span[data-baseweb="tag"] span {
-        color: #3730A3 !important;
+        color: #4F46E5 !important;
         font-weight: 600 !important;
         font-size: 0.85rem !important;
     }
     span[data-baseweb="tag"] svg {
-        fill: #3730A3 !important;
-    }
-
-    /* Dark Mode Overrides for Multiselect Tags */
-    @media (prefers-color-scheme: dark) {
-        span[data-baseweb="tag"] {
-            background-color: #1E1B4B !important;
-            border: 1px solid #4338CA !important;
-        }
-        span[data-baseweb="tag"] span {
-            color: #E0E7FF !important;
-        }
-        span[data-baseweb="tag"] svg {
-            fill: #E0E7FF !important;
-        }
-    }
-
-    /* Header Typography */
-    .app-header-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        color: #0F172A;
-        margin-bottom: 0.25rem;
-    }
-    .app-header-sub {
-        font-size: 1.05rem;
-        color: #475569;
-        margin-bottom: 1.25rem;
-        line-height: 1.5;
-    }
-
-    /* Explicit High-Contrast Dark Mode Overrides */
-    @media (prefers-color-scheme: dark) {
-        .app-header-title {
-            color: #F8FAFC !important;
-        }
-        .app-header-sub {
-            color: #E2E8F0 !important;
-        }
-        .checkout-card, .stat-chip, .era-card {
-            background-color: #1E293B !important;
-            border: 1px solid #334155 !important;
-        }
-        .checkout-val-lg, .stat-chip-value, .era-title {
-            color: #F8FAFC !important;
-        }
-        .checkout-label, .stat-chip-label, .era-desc {
-            color: #CBD5E1 !important;
-        }
+        fill: #4F46E5 !important;
     }
 
     /* Modern Module Badge */
@@ -92,7 +43,7 @@ st.markdown(
         font-size: 0.75rem;
         font-weight: 700;
         color: #4F46E5;
-        background: #EEF2FF;
+        background: rgba(99, 102, 241, 0.12);
         padding: 0.2rem 0.55rem;
         border-radius: 6px;
         text-transform: uppercase;
@@ -101,25 +52,27 @@ st.markdown(
         display: inline-block;
     }
 
-    /* Theme-Adaptive Cards */
+    /* Dynamic Theme-Adaptive Cards */
     .checkout-card {
-        background-color: #FFFFFF;
-        border: 1px solid rgba(148, 163, 184, 0.25);
+        background-color: var(--secondary-background-color, #FFFFFF);
+        border: 1px solid rgba(148, 163, 184, 0.22);
         border-radius: 14px;
         padding: 1.25rem;
         box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
         margin-bottom: 1.25rem;
+        color: var(--text-color, inherit);
     }
     .checkout-val-lg {
         font-size: 2.1rem;
         font-weight: 800;
         letter-spacing: -0.03em;
         line-height: 1.1;
-        color: #0F172A;
+        color: var(--text-color, inherit);
     }
     .checkout-label {
         font-size: 0.8rem;
-        color: #64748B;
+        color: var(--text-color, inherit);
+        opacity: 0.75;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.03em;
@@ -128,15 +81,17 @@ st.markdown(
 
     /* Theme-Adaptive Stat Chips */
     .stat-chip {
-        background-color: #F8FAFC;
-        border: 1px solid rgba(148, 163, 184, 0.25);
+        background-color: var(--secondary-background-color, #F8FAFC);
+        border: 1px solid rgba(148, 163, 184, 0.22);
         border-radius: 10px;
         padding: 0.85rem;
         text-align: center;
+        color: var(--text-color, inherit);
     }
     .stat-chip-label {
         font-size: 0.75rem;
-        color: #64748B;
+        color: var(--text-color, inherit);
+        opacity: 0.75;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.03em;
@@ -144,17 +99,18 @@ st.markdown(
     .stat-chip-value {
         font-size: 1.3rem;
         font-weight: 800;
-        color: #0F172A;
+        color: var(--text-color, inherit);
         margin-top: 0.2rem;
     }
 
     /* Theme-Adaptive Era Cards */
     .era-card {
-        background-color: #FFFFFF;
-        border: 1px solid rgba(148, 163, 184, 0.25);
+        background-color: var(--secondary-background-color, #FFFFFF);
+        border: 1px solid rgba(148, 163, 184, 0.22);
         border-radius: 12px;
         padding: 1.1rem;
         box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.03);
+        color: var(--text-color, inherit);
     }
     .era-pill {
         font-size: 0.72rem;
@@ -167,12 +123,13 @@ st.markdown(
     .era-title {
         font-size: 1rem;
         font-weight: 700;
-        color: #0F172A;
+        color: var(--text-color, inherit);
         margin-bottom: 0.25rem;
     }
     .era-desc {
         font-size: 0.85rem;
-        color: #475569;
+        color: var(--text-color, inherit);
+        opacity: 0.85;
         line-height: 1.45;
     }
     </style>
@@ -220,15 +177,11 @@ st.sidebar.markdown(
 df_geo = df_gold[df_gold["Geography"] == selected_geo].copy()
 
 # ----------------- APP HEADER -----------------
+st.title("Grocery Intelligence Index (GII)")
 st.markdown(
-    '<div class="app-header-title">Grocery Intelligence Index (GII)</div>',
-    unsafe_allow_html=True,
-)
-header_sub = (
     f"Tracking real supermarket prices for everyday groceries in "
-    f"<b>{selected_geo}</b> from 2017 to 2026."
+    f"**{selected_geo}** from 2017 to 2026."
 )
-st.markdown(f'<div class="app-header-sub">{header_sub}</div>', unsafe_allow_html=True)
 
 # ----------------- EXECUTIVE TABS -----------------
 tab_overview, tab_trends, tab_pipeline = st.tabs(
