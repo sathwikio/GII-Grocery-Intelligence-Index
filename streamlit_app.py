@@ -54,18 +54,37 @@ st.markdown(
 
     /* Header Typography */
     .app-header-title {
-        font-size: 2.1rem;
+        font-size: 2.2rem;
         font-weight: 800;
         letter-spacing: -0.03em;
-        color: var(--text-color, #0F172A);
-        margin-bottom: 0.2rem;
+        color: #0F172A;
+        margin-bottom: 0.25rem;
     }
     .app-header-sub {
-        font-size: 1rem;
-        color: var(--text-color, #64748B);
-        opacity: 0.85;
+        font-size: 1.05rem;
+        color: #475569;
         margin-bottom: 1.25rem;
         line-height: 1.5;
+    }
+
+    /* Explicit High-Contrast Dark Mode Overrides */
+    @media (prefers-color-scheme: dark) {
+        .app-header-title {
+            color: #F8FAFC !important;
+        }
+        .app-header-sub {
+            color: #E2E8F0 !important;
+        }
+        .checkout-card, .stat-chip, .era-card {
+            background-color: #1E293B !important;
+            border: 1px solid #334155 !important;
+        }
+        .checkout-val-lg, .stat-chip-value, .era-title {
+            color: #F8FAFC !important;
+        }
+        .checkout-label, .stat-chip-label, .era-desc {
+            color: #CBD5E1 !important;
+        }
     }
 
     /* Modern Module Badge */
@@ -84,7 +103,7 @@ st.markdown(
 
     /* Theme-Adaptive Cards */
     .checkout-card {
-        background-color: var(--secondary-background-color, #FFFFFF);
+        background-color: #FFFFFF;
         border: 1px solid rgba(148, 163, 184, 0.25);
         border-radius: 14px;
         padding: 1.25rem;
@@ -96,12 +115,11 @@ st.markdown(
         font-weight: 800;
         letter-spacing: -0.03em;
         line-height: 1.1;
-        color: var(--text-color, #0F172A);
+        color: #0F172A;
     }
     .checkout-label {
         font-size: 0.8rem;
-        color: var(--text-color, #64748B);
-        opacity: 0.8;
+        color: #64748B;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.03em;
@@ -110,7 +128,7 @@ st.markdown(
 
     /* Theme-Adaptive Stat Chips */
     .stat-chip {
-        background-color: var(--secondary-background-color, #F8FAFC);
+        background-color: #F8FAFC;
         border: 1px solid rgba(148, 163, 184, 0.25);
         border-radius: 10px;
         padding: 0.85rem;
@@ -118,8 +136,7 @@ st.markdown(
     }
     .stat-chip-label {
         font-size: 0.75rem;
-        color: var(--text-color, #64748B);
-        opacity: 0.8;
+        color: #64748B;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.03em;
@@ -127,13 +144,13 @@ st.markdown(
     .stat-chip-value {
         font-size: 1.3rem;
         font-weight: 800;
-        color: var(--text-color, #0F172A);
+        color: #0F172A;
         margin-top: 0.2rem;
     }
 
     /* Theme-Adaptive Era Cards */
     .era-card {
-        background-color: var(--secondary-background-color, #FFFFFF);
+        background-color: #FFFFFF;
         border: 1px solid rgba(148, 163, 184, 0.25);
         border-radius: 12px;
         padding: 1.1rem;
@@ -150,13 +167,12 @@ st.markdown(
     .era-title {
         font-size: 1rem;
         font-weight: 700;
-        color: var(--text-color, #0F172A);
+        color: #0F172A;
         margin-bottom: 0.25rem;
     }
     .era-desc {
         font-size: 0.85rem;
-        color: var(--text-color, #475569);
-        opacity: 0.88;
+        color: #475569;
         line-height: 1.45;
     }
     </style>
