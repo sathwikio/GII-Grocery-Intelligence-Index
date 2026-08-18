@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ----------------- DESIGN SYSTEM CSS -----------------
+# ----------------- UNIVERSAL THEME & DESIGN SYSTEM CSS -----------------
 st.markdown(
     """
     <style>
@@ -21,19 +21,54 @@ st.markdown(
     html, body, [class*="css"] {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
+
+    /* Override Streamlit Multiselect Pill Tags to Calm Indigo / Slate */
+    span[data-baseweb="tag"] {
+        background-color: #EEF2FF !important;
+        border: 1px solid #C7D2FE !important;
+        border-radius: 6px !important;
+        padding: 2px 6px !important;
+    }
+    span[data-baseweb="tag"] span {
+        color: #3730A3 !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+    }
+    span[data-baseweb="tag"] svg {
+        fill: #3730A3 !important;
+    }
+
+    /* Dark Mode Overrides for Multiselect Tags */
+    @media (prefers-color-scheme: dark) {
+        span[data-baseweb="tag"] {
+            background-color: #1E1B4B !important;
+            border: 1px solid #4338CA !important;
+        }
+        span[data-baseweb="tag"] span {
+            color: #E0E7FF !important;
+        }
+        span[data-baseweb="tag"] svg {
+            fill: #E0E7FF !important;
+        }
+    }
+
+    /* Header Typography */
     .app-header-title {
         font-size: 2.1rem;
         font-weight: 800;
         letter-spacing: -0.03em;
-        color: #0F172A;
+        color: var(--text-color, #0F172A);
         margin-bottom: 0.2rem;
     }
     .app-header-sub {
-        font-size: 0.98rem;
-        color: #64748B;
+        font-size: 1rem;
+        color: var(--text-color, #64748B);
+        opacity: 0.85;
         margin-bottom: 1.25rem;
         line-height: 1.5;
     }
+
+    /* Modern Module Badge */
     .step-badge {
         font-size: 0.75rem;
         font-weight: 700;
@@ -46,12 +81,14 @@ st.markdown(
         margin-bottom: 0.35rem;
         display: inline-block;
     }
+
+    /* Theme-Adaptive Cards */
     .checkout-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
+        background-color: var(--secondary-background-color, #FFFFFF);
+        border: 1px solid rgba(148, 163, 184, 0.25);
         border-radius: 14px;
         padding: 1.25rem;
-        box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+        box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
         margin-bottom: 1.25rem;
     }
     .checkout-val-lg {
@@ -59,25 +96,30 @@ st.markdown(
         font-weight: 800;
         letter-spacing: -0.03em;
         line-height: 1.1;
+        color: var(--text-color, #0F172A);
     }
     .checkout-label {
         font-size: 0.8rem;
-        color: #64748B;
+        color: var(--text-color, #64748B);
+        opacity: 0.8;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.03em;
         margin-bottom: 0.25rem;
     }
+
+    /* Theme-Adaptive Stat Chips */
     .stat-chip {
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
+        background-color: var(--secondary-background-color, #F8FAFC);
+        border: 1px solid rgba(148, 163, 184, 0.25);
         border-radius: 10px;
         padding: 0.85rem;
         text-align: center;
     }
     .stat-chip-label {
         font-size: 0.75rem;
-        color: #64748B;
+        color: var(--text-color, #64748B);
+        opacity: 0.8;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.03em;
@@ -85,15 +127,17 @@ st.markdown(
     .stat-chip-value {
         font-size: 1.3rem;
         font-weight: 800;
-        color: #0F172A;
+        color: var(--text-color, #0F172A);
         margin-top: 0.2rem;
     }
+
+    /* Theme-Adaptive Era Cards */
     .era-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
+        background-color: var(--secondary-background-color, #FFFFFF);
+        border: 1px solid rgba(148, 163, 184, 0.25);
         border-radius: 12px;
         padding: 1.1rem;
-        box-shadow: 0 2px 6px -2px rgba(15, 23, 42, 0.04);
+        box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.03);
     }
     .era-pill {
         font-size: 0.72rem;
@@ -106,12 +150,13 @@ st.markdown(
     .era-title {
         font-size: 1rem;
         font-weight: 700;
-        color: #0F172A;
+        color: var(--text-color, #0F172A);
         margin-bottom: 0.25rem;
     }
     .era-desc {
         font-size: 0.85rem;
-        color: #475569;
+        color: var(--text-color, #475569);
+        opacity: 0.88;
         line-height: 1.45;
     }
     </style>
@@ -164,8 +209,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 header_sub = (
-    f"Statistics Canada Retail Price Intelligence Pipeline: Longitudinal analysis of staple food "
-    f"prices across <b>{selected_geo}</b> (January 2017 – June 2026)."
+    f"Tracking real supermarket prices for everyday groceries in "
+    f"<b>{selected_geo}</b> from 2017 to 2026."
 )
 st.markdown(f'<div class="app-header-sub">{header_sub}</div>', unsafe_allow_html=True)
 
@@ -252,7 +297,7 @@ with tab_overview:
             <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
                 <div>
                     <div class="checkout-label">Aggregated Basket Summary</div>
-                    <div style="font-size: 1.15rem; color: #1E293B; font-weight: 700;">
+                    <div style="font-size: 1.15rem; font-weight: 700;">
                         {selected_geo} ({len(selected_cart)} Standard Items)
                     </div>
                 </div>
@@ -266,16 +311,17 @@ with tab_overview:
             </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
                         gap: 1.25rem; margin: 1.1rem 0; padding: 0.9rem 0;
-                        border-top: 1px solid #F1F5F9; border-bottom: 1px solid #F1F5F9;">
+                        border-top: 1px solid rgba(148, 163, 184, 0.2);
+                        border-bottom: 1px solid rgba(148, 163, 184, 0.2);">
                 <div>
                     <div class="checkout-label">2017 Baseline Total</div>
-                    <div class="checkout-val-lg" style="color: #0F172A;">${p_2017_total:.2f}</div>
-                    <div style="font-size: 0.78rem; color: #64748B;">{start_dt_label}</div>
+                    <div class="checkout-val-lg">${p_2017_total:.2f}</div>
+                    <div style="font-size: 0.78rem; opacity: 0.75;">{start_dt_label}</div>
                 </div>
                 <div>
                     <div class="checkout-label">2026 Current Total</div>
-                    <div class="checkout-val-lg" style="color: #0F172A;">${p_2026_total:.2f}</div>
-                    <div style="font-size: 0.78rem; color: #64748B;">{end_dt_label}</div>
+                    <div class="checkout-val-lg">${p_2026_total:.2f}</div>
+                    <div style="font-size: 0.78rem; opacity: 0.75;">{end_dt_label}</div>
                 </div>
                 <div>
                     <div class="checkout-label">Net Dollar Difference</div>
@@ -287,12 +333,12 @@ with tab_overview:
             </div>
             <div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.78rem;
-                            font-weight: 600; color: #64748B; margin-bottom: 0.35rem;">
+                            font-weight: 600; opacity: 0.8; margin-bottom: 0.35rem;">
                     <span>2017 Baseline Cost ({baseline_ratio:.1f}%)</span>
                     <span>Inflation Surcharge ({inflation_ratio:.1f}%)</span>
                 </div>
-                <div style="height: 8px; width: 100%; background: #F1F5F9; border-radius: 9999px;
-                            overflow: hidden; display: flex;">
+                <div style="height: 8px; width: 100%; background: rgba(148, 163, 184, 0.2);
+                            border-radius: 9999px; overflow: hidden; display: flex;">
                     <div style="width: {baseline_ratio}%; background: #4F46E5; height: 100%;">
                     </div>
                     <div style="width: {inflation_ratio}%; background: #EF4444; height: 100%;">
@@ -377,8 +423,9 @@ with tab_overview:
         diff_str = f"+${diff_prim:.2f} ({pct_prim:+.1f}%)"
         st.markdown(
             f"""
-            <div class="stat-chip" style="border-color: #FCA5A5; background: #FEF2F2;">
-                <div class="stat-chip-label" style="color: #991B1B;">Net Change</div>
+            <div class="stat-chip" style="border-color: rgba(239, 68, 68, 0.4);
+                                          background: rgba(239, 68, 68, 0.08);">
+                <div class="stat-chip-label" style="color: #DC2626;">Net Change</div>
                 <div class="stat-chip-value" style="color: #DC2626;">{diff_str}</div>
             </div>
             """,
@@ -429,7 +476,7 @@ with tab_overview:
         xaxis=dict(
             title="",
             showgrid=True,
-            gridcolor="#F1F5F9",
+            gridcolor="rgba(148, 163, 184, 0.15)",
             tickformat="%Y",
             dtick="M24",
         ),
@@ -437,13 +484,13 @@ with tab_overview:
             title="Average Retail Price ($CAD)",
             tickprefix="$",
             showgrid=True,
-            gridcolor="#F1F5F9",
+            gridcolor="rgba(148, 163, 184, 0.15)",
         ),
         hovermode="x unified",
         legend=dict(orientation="h", yanchor="bottom", y=-0.22, xanchor="center", x=0.5),
         height=400,
-        plot_bgcolor="#FFFFFF",
-        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
         margin=dict(l=10, r=10, t=10, b=10),
     )
 
@@ -499,14 +546,14 @@ with tab_trends:
         )
         fig_lb.update_layout(
             height=460,
-            plot_bgcolor="#FFFFFF",
-            paper_bgcolor="#FFFFFF",
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
             coloraxis_showscale=False,
             margin=dict(l=10, r=45, t=10, b=10),
             xaxis=dict(
                 title="Cumulative Price Increase (%)",
                 showgrid=True,
-                gridcolor="#F1F5F9",
+                gridcolor="rgba(148, 163, 184, 0.15)",
                 ticksuffix="%",
             ),
             yaxis=dict(title=""),
