@@ -1,12 +1,29 @@
 # Grocery Intelligence Index (GII)
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gii-grocery-intelligence-index-ssg.streamlit.app/)
 [![Databricks](https://img.shields.io/badge/Platform-Databricks-EF3E2E?style=flat&logo=databricks&logoColor=white)](https://databricks.com)
 [![PySpark](https://img.shields.io/badge/Engine-PySpark-FDEE21?style=flat&logo=apache-spark&logoColor=black)](https://spark.apache.org/)
 [![Delta Lake](https://img.shields.io/badge/Storage-Delta%20Lake-00A3E0?style=flat&logo=delta-lake&logoColor=white)](https://delta.io/)
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
 [![CI](https://img.shields.io/github/actions/workflow/status/sathwikio/GII-Grocery-Intelligence-Index/ci.yml?branch=main&style=flat&label=CI)](https://github.com/sathwikio/GII-Grocery-Intelligence-Index/actions)
 
+> **Live Interactive Application:** [https://gii-grocery-intelligence-index-ssg.streamlit.app/](https://gii-grocery-intelligence-index-ssg.streamlit.app/)
+
 A PySpark and Delta Lake pipeline that ingests monthly Canadian grocery price surveys from **Statistics Canada (Table 18-10-0245-01)**, standardizes product and unit grains, enforces schema and data quality gates with dead-letter quarantine routing, and generates calendar-aligned Month-over-Month (MoM) price movement metrics across 10 staple grocery basket categories from 2017 to 2026.
+
+---
+
+## Interactive Dashboard (Serving Tier)
+
+The pipeline exposes a clean, lightweight serving tier powered by Streamlit and Plotly to enable interactive price discovery, shopping cart inflation simulation, and macroeconomic timeline analysis:
+
+| Module 1: Basket Simulation | Module 2: Price Trajectory |
+| :--- | :--- |
+| ![Basket Simulator](docs/images/dashboard_basket_simulator.png) | ![Price Explorer](docs/images/dashboard_price_explorer.png) |
+
+| Module 3 & 4: Inflation Leaderboard & Historical Eras |
+| :--- |
+| ![Inflation Leaderboard and Eras](docs/images/dashboard_macro_trends.png) |
 
 ---
 
@@ -172,6 +189,8 @@ databricks bundle run grocery_intelligence_pipeline -t dev
 
 ```text
 .
+├── streamlit_app.py         # Streamlit BI serving application
+├── requirements.txt         # Lightweight serving tier dependencies
 ├── src/grocery_index/       # Core PySpark transformations & data quality engine
 │   ├── bronze.py            # Raw ingestion, BOM sanitization & audit lineage
 │   ├── silver.py            # Cleansing, surrogate key generation & quarantine routing
@@ -185,10 +204,12 @@ databricks bundle run grocery_intelligence_pipeline -t dev
 ├── Bronze/ Silver/ Gold/    # Databricks interactive notebook entrypoints
 ├── data/
 │   ├── raw/                 # Official StatCan 18-10-0245-01 dataset (2017–2026)
+│   ├── export/              # Curated Gold analytical extract for serving
 │   └── sample/              # Bundled sample dataset for unit testing
 ├── tests/                   # PySpark unit, quality, and end-to-end integration tests
 ├── resources/               # Databricks Asset Bundle workflow YAML definition
 ├── docs/
+│   ├── images/                    # UI dashboard visual assets
 │   ├── architecture-decisions.md  # Architecture Decision Records (ADRs)
 │   ├── data-contract.md           # Schema contracts and SLA definitions
 │   └── runbook.md                 # Operational runbook & backfill procedures
