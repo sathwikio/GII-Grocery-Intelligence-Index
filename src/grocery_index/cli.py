@@ -26,8 +26,16 @@ def get_spark_session(app_name: str = "GroceryIntelligenceIndex-CLI"):
                 "org.apache.spark.sql.delta.catalog.DeltaCatalog",
             )
             .config("spark.ui.enabled", "false")
+            .config("spark.driver.host", "127.0.0.1")
             .config("spark.driver.bindAddress", "127.0.0.1")
         )
+        try:
+            from delta import configure_spark_with_delta_pip
+
+            builder = configure_spark_with_delta_pip(builder)
+        except ImportError:
+            pass
+
         return builder.getOrCreate()
     except Exception as exc:
         logger.error("Failed to initialize SparkSession: %s", exc)

@@ -8,28 +8,17 @@ from pyspark.sql import SparkSession
 @pytest.fixture(scope="session")
 def spark():
     """Initializes a local SparkSession configured for unit and integration tests."""
-    builder = (
-        SparkSession.builder.master("local[2]")
+    session = (
+        SparkSession.builder.master("local[1]")
         .appName("gii-test-suite")
-        .config("spark.sql.shuffle.partitions", "2")
-        .config("spark.default.parallelism", "2")
+        .config("spark.sql.shuffle.partitions", "1")
+        .config("spark.default.parallelism", "1")
         .config("spark.sql.session.timeZone", "UTC")
         .config("spark.ui.enabled", "false")
+        .config("spark.driver.host", "127.0.0.1")
         .config("spark.driver.bindAddress", "127.0.0.1")
-        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-        .config(
-            "spark.sql.catalog.spark_catalog",
-            "org.apache.spark.sql.delta.catalog.DeltaCatalog",
-        )
+        .getOrCreate()
     )
-    try:
-        from delta import configure_spark_with_delta_pip
-
-        builder = configure_spark_with_delta_pip(builder)
-    except ImportError:
-        pass
-
-    session = builder.getOrCreate()
     yield session
     session.stop()
 

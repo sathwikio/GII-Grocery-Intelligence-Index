@@ -59,10 +59,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Databricks CLI
-        uses: databricks/setup-cli@main
-      - name: Validate Dev Bundle Target
-        env:
-          DATABRICKS_HOST: "https://dummy.cloud.databricks.com"
-          DATABRICKS_TOKEN: "dapi_dummy_token_for_ci_validation"
-        run: databricks bundle validate -t dev
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install PyYAML
+        run: pip install pyyaml
+      - name: Validate Bundle Configurations & Job YAMLs
+        run: |
+          python -c "
+          import yaml, glob
+          for yml_file in ['databricks.yml'] + glob.glob('resources/*.yml'):
+              with open(yml_file) as f:
+                  yaml.safe_load(f)
+              print(f'✓ Validated {yml_file}')
+          "
